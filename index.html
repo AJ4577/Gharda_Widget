@@ -563,30 +563,42 @@ async function loadTerritories(){
     }
 
     try{
+         
+        console.log("Fetching territories for:", currentUserEmail);
+        
+       const territoryResp = await ZOHO.CRM.FUNCTIONS.execute(
+            "get_child_territories_of_pseudo_users",
+            {
+                arguments: JSON.stringify({
+                    useremail: currentUserEmail
+                })
+            });
 
-        const territoryResp = await ZOHO.CRM.API.searchRecord({
-            Entity: "Territory_Hierarchy",
-            Type: "criteria",
-            Query: `(Email:equals:${currentUserEmail}) and (Territory_Type:equals:Child)`,
-            page: 1,
-            per_page: 200
-        });
+            console.log("Territory function raw response:", territoryResp);
 
-        const territories = territoryResp?.data || [];
+        let output =
+            territoryResp?.details?.output ||
+            territoryResp?.details?.Output ||
+            territoryResp?.output ||
+            territoryResp?.Output ||
+            territoryResp;
+
+        if(typeof output === "string"){
+            output = JSON.parse(output);
+        }
+
+       const territories = output?.territories || [];
 
         console.log("Assigned Child Territories:", territories);
 
-        territories.forEach(record => {
+        territories.forEach(territory => {
 
-            const territoryId = record.Territory_ID;
-            const territoryName = record.Name;
-
-            if(!territoryId || !territoryName) return;
+            if(!territory.id || !territory.name) return;
 
             const option = document.createElement("option");
 
-            option.value = String(territoryId);
-            option.textContent = territoryName;
+            option.value = String(territory.id);
+            option.textContent = territory.name;
 
             territorySelect.appendChild(option);
         });
