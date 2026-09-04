@@ -1,0 +1,1196 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Brand Sales Table</title>
+
+<style>
+html,
+body{
+    height:100%;
+    margin:0;
+}
+
+body{
+    font-family:"Segoe UI", Roboto, sans-serif;
+    background:linear-gradient(135deg,#eef2ff,#f8fafc);
+    overflow:hidden;
+}
+
+/* MAIN CONTAINER */
+.container{
+    height:100vh;
+    padding:20px;
+    box-sizing:border-box;
+    display:flex;
+    flex-direction:column;
+    overflow:hidden;
+}
+
+/* TOP FIXED AREA */
+.topSection{
+    flex:0 0 auto;
+    background:linear-gradient(135deg,#eef2ff,#f8fafc);
+    padding-bottom:15px;
+    z-index:100;
+}
+
+/* HEADER BAR */
+.headerBar{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:15px;
+    margin-bottom:15px;
+}
+
+/* HEADER TITLE */
+.header{
+    background:linear-gradient(135deg,#4f46e5,#6366f1);
+    color:white;
+    padding:18px 22px;
+    font-size:20px;
+    font-weight:600;
+    border-radius:12px;
+    flex:1;
+}
+
+/* SAVE BUTTON */
+.saveBtn{
+    background:linear-gradient(135deg,#22c55e,#16a34a);
+    color:white;
+    border:none;
+    padding:12px 22px;
+    border-radius:8px;
+    font-weight:600;
+    cursor:pointer;
+    box-shadow:0 4px 10px rgba(34,197,94,.3);
+    transition:.2s;
+    white-space:nowrap;
+}
+
+.saveBtn:hover{
+    transform:translateY(-1px);
+}
+
+.saveBtn:disabled{
+    opacity:.6;
+    cursor:not-allowed;
+    transform:none;
+}
+
+/* DROPDOWN ROW */
+.filterRow{
+    display:flex;
+    justify-content:flex-start;
+    align-items:center;
+    gap:20px;
+    margin-bottom:0;
+}
+
+.dataUpdateNotice{
+    display:none;
+    font-size:13px;
+    font-weight:600;
+    color:#b45309;
+    background:#fef3c7;
+    padding:8px 12px;
+    border-radius:8px;
+}
+
+/* Dropdown wrapper */
+.selectWrapper{
+    position:relative;
+    display:inline-block;
+    border-radius:8px;
+    overflow:hidden;
+    background:linear-gradient(135deg,#4f46e5,#6366f1);
+    box-shadow:0 4px 10px rgba(79,70,229,.4);
+}
+
+/* Select element */
+.selectWrapper select{
+    appearance:none;
+    -webkit-appearance:none;
+    -moz-appearance:none;
+    border:none;
+    background:transparent;
+    color:white;
+    font-weight:600;
+    padding:9px 36px 9px 16px;
+    cursor:pointer;
+    outline:none;
+}
+
+/* Dropdown options */
+.selectWrapper select option{
+    color:#111827;
+    background:white;
+}
+
+/* Dropdown arrow */
+.selectWrapper::after{
+    content:"▼";
+    position:absolute;
+    right:12px;
+    top:50%;
+    transform:translateY(-50%);
+    color:white;
+    pointer-events:none;
+    font-size:11px;
+}
+
+/* TABLE CARD */
+.table-container{
+    flex:1 1 auto;
+    overflow:auto;
+    background:white;
+    border-radius:12px;
+    box-shadow:0 10px 25px rgba(0,0,0,0.08);
+    position:relative;
+}
+
+/* TABLE */
+table{
+    border-collapse:separate;
+    border-spacing:0;
+    min-width:2000px;
+    width:100%;
+    font-size:13px;
+}
+
+/* TABLE HEADER */
+#brandTable thead th{
+    position:sticky;
+    top:0;
+    background:#f1f5f9;
+    z-index:10;
+    padding:10px;
+    border:1px solid #e2e8f0;
+    font-weight:600;
+    text-align:center;
+    white-space:nowrap;
+}
+
+/* TABLE CELLS */
+td{
+    padding:8px;
+    border:1px solid #e2e8f0;
+    text-align:center;
+    background:white;
+}
+
+/* ROW HOVER */
+tbody tr:hover td{
+    background:#f8fafc;
+}
+
+/* BRAND COLUMN */
+.brand{
+    text-align:left;
+    font-weight:600;
+    color:#1e293b;
+    white-space:nowrap;
+}
+
+/* STICKY BRAND COLUMN */
+#brandTable th:first-child,
+#brandTable td:first-child{
+    position:sticky;
+    left:0;
+    z-index:8;
+    box-shadow:2px 0 6px rgba(0,0,0,0.05);
+}
+
+/* FIRST HEADER CELL */
+#brandTable thead th:first-child{
+    background:#f1f5f9;
+    z-index:20;
+}
+
+/* FIRST BODY COLUMN */
+#brandTable tbody td:first-child{
+    background:white;
+}
+
+#brandTable tbody tr:hover td:first-child{
+    background:#f8fafc;
+}
+
+/* INPUTS */
+input{
+    width:80px;
+    padding:6px;
+    text-align:center;
+    border:1px solid #cbd5e1;
+    border-radius:6px;
+    font-size:12px;
+    transition:.2s;
+    box-sizing:border-box;
+}
+
+input.calcInput{
+    width:105px;
+    font-weight:600;
+}
+
+input:focus{
+    outline:none;
+    border-color:#6366f1;
+    box-shadow:0 0 0 2px rgba(99,102,241,.2);
+}
+
+input[readonly]{
+    background:#f8fafc;
+    border-color:#e2e8f0;
+}
+
+/* FULL SCREEN LOADER */
+.overlayLoader{
+    position:fixed;
+    top:0;
+    left:0;
+    width:100%;
+    height:100%;
+    background:rgba(255,255,255,0.7);
+    display:none;
+    flex-direction:column;
+    justify-content:center;
+    align-items:center;
+    z-index:9999;
+    backdrop-filter:blur(3px);
+}
+
+.spinner{
+    width:45px;
+    height:45px;
+    border:5px solid #e5e7eb;
+    border-top:5px solid #4f46e5;
+    border-radius:50%;
+    animation:spin 1s linear infinite;
+}
+
+@keyframes spin{
+    to{
+        transform:rotate(360deg);
+    }
+}
+
+.loaderText{
+    margin-top:10px;
+    font-weight:600;
+    color:#334155;
+}
+
+/* TOAST */
+.toast{
+    position:fixed;
+    bottom:20px;
+    right:20px;
+    background:#22c55e;
+    color:white;
+    padding:12px 18px;
+    border-radius:8px;
+    font-weight:600;
+    display:none;
+    box-shadow:0 6px 20px rgba(0,0,0,0.2);
+    z-index:10000;
+}
+
+/* RESPONSIVE */
+@media(max-width:768px){
+    .headerBar{
+        align-items:stretch;
+    }
+
+    .header{
+        font-size:17px;
+        padding:14px 16px;
+    }
+
+    .saveBtn{
+        padding:10px 16px;
+    }
+}
+</style>
+
+<script src="https://live.zwidgets.com/js-sdk/1.1/ZohoEmbededAppSDK.min.js"></script>
+</head>
+
+<body>
+
+<div class="container">
+
+    <div class="topSection">
+        <div class="headerBar">
+            <div class="header">Weekly Liquidation</div>
+
+            <button onclick="saveLiquidation()" id="saveBtn" class="saveBtn">
+                💾 Save
+            </button>
+        </div>
+
+        <div class="filterRow">
+            <div class="selectWrapper">
+                <select id="ratingSelect">
+                    <option value="none">-- Please select rating --</option>
+                    <option value="Five Star">Five Star</option>
+                    <option value="Three Star">Three Star</option>
+                    <option value="Two Star">Two Star</option>
+                    <option value="Strategic Alliance">Strategic Alliance</option>
+                    <option value="Discontinued">Discontinued</option>
+                </select>
+            </div>
+
+            <div class="selectWrapper">
+                <select id="territorySelect">
+                    <option value="none">Territory</option>
+                </select>
+            </div>
+
+            <div id="dataUpdateNotice" class="dataUpdateNotice">
+                Latest data may take 1-2 minutes to update. Please do not submit again until the latest data is available. Kindly refresh the screen after 1-2 minutes to view the latest data.
+            </div>
+        </div>
+    </div>
+
+    <div class="table-container">
+        <table id="brandTable">
+            <thead>
+                <tr id="headerRow">
+                    <th>Brand Name</th>
+                    <th>1st April Opening Stock</th>
+                    <th>Sale Upto Previous Month</th>
+                    <th>Sale Week1</th>
+                    <th>Sale Week2</th>
+                    <th>Sale Week3</th>
+                    <th>Sale Week4</th>
+                    <th class="sale-end-header">Sale End Of Month</th>
+                    <th>Final Year Sales</th>
+                    <th>Liquidation Upto Previous Month</th>
+                    <th>Liquidation Week1</th>
+                    <th>Liquidation Week2</th>
+                    <th>Liquidation Week3</th>
+                    <th>Liquidation Week4</th>
+                    <th class="liq-month-header">Liquidation Monthly Closing</th>
+                    <th>Final Year Liquidation</th>
+                    <th>Closing Inventory at the End of Month</th>
+                </tr>
+            </thead>
+            <tbody id="brandBody">
+                <tr>
+                    <td colspan="17" style="text-align:center;">Please select rating to view data</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+</div>
+
+<div id="overlayLoader" class="overlayLoader">
+    <div class="spinner"></div>
+    <div class="loaderText" id="loaderText">Loading data...</div>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script>
+function getCurrentWeek(){
+    let today = new Date();
+    let day = today.getDate();
+
+    if(day <= 7) return 1;
+    else if(day <= 14) return 2;
+    else if(day <= 21) return 3;
+    else if(day <= 28) return 4;
+    else return 5;
+}
+
+let currentWeek = getCurrentWeek();
+
+let CURRENT_USER_PROFILE = "";
+let currentUserId = null;
+let currentUserEmail = "";
+
+let IS_PSEUDO_SALES_OFFICER = false;
+
+let currentSelectedRating = "none";
+let currentSelectedTerritoryId = "none";
+
+let isDataUpdating = false;
+
+/* ---------------- COMMON HELPERS ---------------- */
+
+function getTableColspan(){
+    const headerCount = document.querySelectorAll("#headerRow th").length;
+    return headerCount || 17;
+}
+
+function setTableMessage(message){
+    const tbody = document.getElementById("brandBody");
+    tbody.innerHTML = `<tr><td colspan="${getTableColspan()}" style="text-align:center;">${message}</td></tr>`;
+}
+
+function getInputNumber(row, selector){
+    const input = row.querySelector(selector);
+    if(!input) return 0;
+
+    const value = parseFloat(input.value);
+    return isNaN(value) ? 0 : value;
+}
+
+function getValueNumber(value){
+    const num = parseFloat(value);
+    return isNaN(num) ? 0 : num;
+}
+
+function formatDecimal(value){
+    const num = parseFloat(value);
+    return isNaN(num) ? "0.000" : num.toFixed(3);
+}
+
+function setInputValue(row, selector, value){
+    const input = row.querySelector(selector);
+    if(input){
+        input.value = formatDecimal(value);
+    }
+}
+
+/* ---------------- PAGE LOAD ---------------- */
+
+ZOHO.embeddedApp.on("PageLoad", async function(data){
+
+    document.getElementById("overlayLoader").style.display = "flex";
+    document.getElementById("loaderText").innerText = "Loading brands...";
+
+    try{
+        const userRes = await ZOHO.CRM.CONFIG.getCurrentUser();
+
+        const currentUser = userRes?.users?.[0] || {};
+        
+        CURRENT_USER_PROFILE = currentUser?.profile?.name || "";
+        currentUserId = currentUser?.id || null;
+        currentUserEmail = currentUser?.email || "";
+
+        IS_PSEUDO_SALES_OFFICER =
+           CURRENT_USER_PROFILE === "Pseudo Sales Officer";
+
+        console.log("Current User ID:", currentUserId);
+        console.log("Current User Email:", currentUserEmail);
+        console.log("Current User Profile:", CURRENT_USER_PROFILE);
+        console.log("IS_PSEUDO_SALES_OFFICER:", IS_PSEUDO_SALES_OFFICER);
+
+        handleRoleUI();
+        if(IS_PSEUDO_SALES_OFFICER){
+            await loadTerritories();
+   }
+        await loadBrands();
+    }
+    catch(err){
+        console.error("Page load error:", err);
+    }
+    finally{
+        document.getElementById("overlayLoader").style.display = "none";
+    }
+});
+
+ZOHO.embeddedApp.init();
+
+document.addEventListener("DOMContentLoaded", () => {
+    const ratingSelect = document.getElementById("ratingSelect");
+    const territorySelect = document.getElementById("territorySelect");
+
+    ratingSelect.addEventListener("change", async () => {
+        currentSelectedRating = ratingSelect.value;
+
+        const tbody = document.getElementById("brandBody");
+        tbody.innerHTML = "";
+
+        if(currentSelectedRating === "none") {
+            setTableMessage("Please select rating to view data");
+            return;
+        }
+
+        if(currentSelectedTerritoryId === "none"){
+            setTableMessage("Please select territory to view data");
+            return;
+       }
+
+        await loadBrands(currentSelectedRating);
+    });
+
+    territorySelect.addEventListener("change", async () => {
+
+        currentSelectedTerritoryId = territorySelect.value;
+
+        console.log("Selected Territory ID:", currentSelectedTerritoryId);
+
+        if(currentSelectedTerritoryId === "none"){
+            setTableMessage("Please select territory to view data");
+            return;
+        }
+
+        if(currentSelectedRating === "none"){
+            setTableMessage("Please select rating to view data");
+            return;
+        }
+
+        await loadBrands(currentSelectedRating);
+    });
+});
+
+function handleRoleUI(){
+    const saveBtn = document.getElementById("saveBtn");
+
+    if(IS_PSEUDO_SALES_OFFICER){
+        saveBtn.style.display = "inline-block";
+        saveBtn.disabled = false;
+    }else{
+        saveBtn.style.display = "none";
+    }
+}
+
+async function loadTerritories(){
+
+    const territorySelect = document.getElementById("territorySelect");
+
+    territorySelect.innerHTML =
+        `<option value="none">Territory</option>`;
+
+    if(!currentUserEmail){
+        console.error("Current user email not found");
+        return;
+    }
+
+    try{
+
+        const territoryResp = await ZOHO.CRM.API.searchRecord({
+            Entity: "Territory_Hierarchy",
+            Type: "criteria",
+            Query: `(Email:equals:${currentUserEmail}) and (Territory_Type:equals:Child)`,
+            page: 1,
+            per_page: 200
+        });
+
+        const territories = territoryResp?.data || [];
+
+        console.log("Assigned Child Territories:", territories);
+
+        territories.forEach(record => {
+
+            const territoryId = record.Territory_ID;
+            const territoryName = record.Name;
+
+            if(!territoryId || !territoryName) return;
+
+            const option = document.createElement("option");
+
+            option.value = String(territoryId);
+            option.textContent = territoryName;
+
+            territorySelect.appendChild(option);
+        });
+
+    }catch(err){
+        console.error("Territory fetch error:", err);
+    }
+}
+
+/* ---------------- LOAD BRANDS ---------------- */
+async function loadBrands(selectedRating = "none") {
+    const tbody = document.getElementById("brandBody");
+    tbody.innerHTML = "";
+
+    if (selectedRating === "none") {
+        setTableMessage("Please select rating to view data");
+        return;
+    }
+
+    if (currentSelectedTerritoryId === "none") {
+        setTableMessage("Please select territory to view data");
+        return;
+    }
+
+    if (!currentUserId) {
+        setTableMessage("Logged-in user ID not found");
+        return;
+    }
+
+    document.getElementById("overlayLoader").style.display = "flex";
+    document.getElementById("loaderText").innerText = "Fetching data...";
+
+    try {
+        let brandMap = {};
+
+        let page = 1;
+        let moreRecords = true;
+
+        // STEP 1: Fetch all brands rating-wise from Brand_Master.
+        // This controls which brands show in widget.
+        while (moreRecords) {
+            let query = `(Sales_Organization:equals:1000) and (Star_Rating:equals:${selectedRating})`;
+
+            const brandsResp = await ZOHO.CRM.API.searchRecord({
+                Entity: "Brand_Master",
+                Type: "criteria",
+                Query: query,
+                page: page,
+                per_page: 200
+            });
+
+            const brands = brandsResp?.data || [];
+
+            for (const b of brands) {
+                const brandId = normalizeRecordId(b.id);
+
+                if (!brandId) continue;
+
+                if (!brandMap[brandId]) {
+                    let fullTechName = "";
+
+                    try {
+                        let productResp = await ZOHO.CRM.API.searchRecord({
+                            Entity: "Products",
+                            Type: "criteria",
+                            Query: `(Brand_Name_Master1.id:equals:${brandId})`,
+                            page: 1,
+                            per_page: 1
+                        });
+
+                        const product = productResp?.data?.[0];
+                        fullTechName = product?.Full_Technical_Name || "";
+                    } catch (productErr) {
+                        console.warn("Product fetch failed for brand:", brandId, productErr);
+                    }
+
+                    const brandName = b.Name || "-";
+                    let displayName = `${brandName}${fullTechName ? " - (" + fullTechName + ")" : ""}`;
+
+                    brandMap[brandId] = {
+                        brandId: brandId,
+                        brandName: brandName,
+                        displayName: displayName,
+                        starRating: b["Star_Rating"] || "",
+                        openingStock: b["1st April Opening Stock"] || 0
+                    };
+                }
+            }
+
+            if (brandsResp?.info?.more_records) {
+                page++;
+            } else {
+                moreRecords = false;
+            }
+        }
+ 
+  
+        // STEP 2: Call analytics function by passing logged-in user id.
+        const payload = {
+            user_id: String(currentUserId),
+            terr_id: String(currentSelectedTerritoryId)
+        };
+
+        console.log("anayticsfunc payload:", payload);
+
+        const analyticsResp = await ZOHO.CRM.FUNCTIONS.execute(
+    "anayticsfunc",
+    {
+      arguments: JSON.stringify({
+        data: payload
+      })
+    }
+  );
+        console.log("anayticsfunc raw response:", analyticsResp);
+
+        let salesData = parseAnalyticsFunctionData(analyticsResp);
+
+        console.log("anayticsfunc parsed data:", salesData);
+
+        if (!Array.isArray(salesData)) {
+            salesData = [];
+        }
+
+        // STEP 3: Make analytics maps.
+        // Primary match: Brand Id
+        // Fallback match: Brand Name
+        let salesMapByBrandId = {};
+        let salesMapByBrandName = {};
+
+        salesData.forEach(s => {
+            const analyticsBrandId = normalizeRecordId(s["Brand Id"]);
+            const analyticsBrandName = normalizeName(s["Brand Name"]);
+
+            if (analyticsBrandId) {
+                salesMapByBrandId[analyticsBrandId] = s;
+            }
+
+            if (analyticsBrandName) {
+                salesMapByBrandName[analyticsBrandName] = s;
+            }
+        });
+
+        console.log("salesMapByBrandId:", salesMapByBrandId);
+        console.log("salesMapByBrandName:", salesMapByBrandName);
+
+        let isWeek5Present = currentWeek === 5 || Object.keys(brandMap).some(brandId => {
+            const brandInfo = brandMap[brandId];
+
+            const s =
+                salesMapByBrandId[brandId] ||
+                salesMapByBrandName[normalizeName(brandInfo.brandName)] ||
+                {};
+
+            return (
+                getValueNumber(s["Week 5"]) > 0 ||
+                getValueNumber(s["Liquidated Week 5"]) > 0
+            );
+        });
+
+        updateWeek5Headers(isWeek5Present);
+
+        tbody.innerHTML = "";
+
+        const sortedBrands = sortBrandEntriesAscending(Object.entries(brandMap));
+
+        if (sortedBrands.length === 0) {
+            setTableMessage("No brands found for selected rating");
+            return;
+        }
+
+        // STEP 4: Render all rating-wise Brand_Master brands.
+        // Fill sales/liquidation only when analytics has matching data.
+        for (const [brandId, data] of sortedBrands) {
+            let s =
+                salesMapByBrandId[brandId] ||
+                salesMapByBrandName[normalizeName(data.brandName)] ||
+                {};
+
+            console.log("Rendering brand:", {
+                brandId: brandId,
+                brandName: data.brandName,
+                analyticsMatched: Object.keys(s).length > 0,
+                analyticsRow: s
+            });
+
+            let openingStock = s["1st April Opening Stock"] ?? data.openingStock ?? 0;
+
+            let salePrev = s["Sales till Previous Month (FY)"] ?? 0;
+            let sale1 = s["Week 1"] ?? 0;
+            let sale2 = s["Week 2"] ?? 0;
+            let sale3 = s["Week 3"] ?? 0;
+            let sale4 = s["Week 4"] ?? 0;
+            let sale5 = s["Week 5"] ?? 0;
+
+            let prevLiq = s["Liquidated Qty till Last Month"] ?? 0;
+            let liq1 = getValueNumber(s["Liquidated Week 1"]);
+            let liq2 = getValueNumber(s["Liquidated Week 2"]);
+            let liq3 = getValueNumber(s["Liquidated Week 3"]);
+            let liq4 = getValueNumber(s["Liquidated Week 4"]);
+            let liq5 = getValueNumber(s["Liquidated Week 5"]);
+
+            let tr = document.createElement("tr");
+            tr.dataset.brandid = brandId;
+
+            tr.innerHTML = `
+                <td class="brand">${data.displayName}</td>
+                <td><input class="openingStock" value="${openingStock}" readonly></td>
+
+                <td><input class="prevSale" value="${salePrev}" readonly></td>
+                <td><input class="sale sale1" value="${sale1}" readonly></td>
+                <td><input class="sale sale2" value="${sale2}" readonly></td>
+                <td><input class="sale sale3" value="${sale3}" readonly></td>
+                <td><input class="sale sale4" value="${sale4}" readonly></td>
+                ${isWeek5Present ? `<td><input class="sale sale5" value="${sale5}" readonly></td>` : ``}
+                <td><input class="saleTotal calcInput" value="0.000" readonly></td>
+                <td><input class="finalYearSales calcInput" value="0.000" readonly></td>
+
+                <td><input class="prevLiquidation" value="${prevLiq}" readonly></td>
+                <td><input class="liq liq1" value="${formatDecimal(liq1)}"></td>
+                <td><input class="liq liq2" value="${formatDecimal(liq2)}"></td>
+                <td><input class="liq liq3" value="${formatDecimal(liq3)}"></td>
+                <td><input class="liq liq4" value="${formatDecimal(liq4)}"></td>
+                ${isWeek5Present ? `<td><input class="liq liq5" value="${formatDecimal(liq5)}"></td>` : ``}
+                <td><input class="liqTotal calcInput" value="0.000" readonly></td>
+                <td><input class="finalYearLiquidation calcInput" value="0.000" readonly></td>
+                <td><input class="closingInventory calcInput" value="0.000" readonly></td>
+            `;
+
+            tbody.appendChild(tr);
+        }
+
+        setupInputs();
+        calculateSales();
+        calculateLiquidation();
+
+    } catch (err) {
+        console.error("Error loading brands:", err);
+        setTableMessage("Error fetching brands");
+    } finally {
+        document.getElementById("overlayLoader").style.display = "none";
+    }
+}
+
+/* ---------------- WEEK 5 HEADER CONTROL ---------------- */
+
+function updateWeek5Headers(isWeek5Present){
+    const header = document.getElementById("headerRow");
+
+    if(isWeek5Present){
+        if(!document.querySelector(".sale-week5-header")){
+            let th1 = document.createElement("th");
+            th1.innerText = "Sale Week5";
+            th1.classList.add("week5", "sale-week5-header");
+
+            const saleEndHeader = document.querySelector(".sale-end-header");
+            header.insertBefore(th1, saleEndHeader);
+        }
+
+        if(!document.querySelector(".liq-week5-header")){
+            let th2 = document.createElement("th");
+            th2.innerText = "Liquidation Week5";
+            th2.classList.add("week5", "liq-week5-header");
+
+            const liqMonthHeader = document.querySelector(".liq-month-header");
+            header.insertBefore(th2, liqMonthHeader);
+        }
+    }else{
+        document.querySelectorAll("#brandTable thead th.week5").forEach(th => {
+            th.remove();
+        });
+    }
+}
+
+function addWeek5(){
+    updateWeek5Headers(true);
+}
+
+/* ---------------- INPUT CONTROL ---------------- */
+
+function setupInputs(){
+    const allLiqInputs = document.querySelectorAll(".liq");
+    const allInputs = document.querySelectorAll("#brandTable input");
+
+    if(IS_PSEUDO_SALES_OFFICER){
+        allLiqInputs.forEach(input => {
+            input.readOnly = true;
+            input.disabled = false;
+        });
+
+        document.querySelectorAll(".liq" + currentWeek).forEach(input => {
+            input.readOnly = false;
+            input.disabled = false;
+        });
+
+    }else{
+        allInputs.forEach(input => {
+            input.readOnly = true;
+            input.disabled = true;
+        });
+    }
+
+    allLiqInputs.forEach(input => {
+        input.addEventListener("input", function(){
+            if(this.readOnly || this.disabled) return;
+
+            this.value = this.value.replace(/[^0-9]/g, '');
+
+            calculateLiquidation();
+        });
+
+        input.addEventListener("blur", function(){
+            if(this.readOnly || this.disabled) return;
+
+            let raw = this.value.replace(/[^0-9]/g, '');
+
+            if(raw !== ""){
+                this.value = (parseFloat(raw) / 1000).toFixed(3);
+            }
+
+            calculateLiquidation();
+        });
+    });
+}
+
+/* ---------------- SALES CALC ---------------- */
+
+function calculateSales(){
+    document.querySelectorAll("#brandTable tbody tr").forEach(row => {
+        if(!row.dataset.brandid) return;
+
+        let prevSale = getInputNumber(row, ".prevSale");
+
+        let s1 = getInputNumber(row, ".sale1");
+        let s2 = getInputNumber(row, ".sale2");
+        let s3 = getInputNumber(row, ".sale3");
+        let s4 = getInputNumber(row, ".sale4");
+        let s5 = getInputNumber(row, ".sale5");
+
+        let saleEndOfMonth = s1 + s2 + s3 + s4 + s5;
+        let finalYearSales = prevSale + saleEndOfMonth;
+
+        setInputValue(row, ".saleTotal", saleEndOfMonth);
+        setInputValue(row, ".finalYearSales", finalYearSales);
+
+        calculateClosingInventory(row);
+    });
+}
+
+/* ---------------- LIQUIDATION CALC ---------------- */
+
+function calculateLiquidation(){
+    document.querySelectorAll("#brandTable tbody tr").forEach(row => {
+        if(!row.dataset.brandid) return;
+
+        let prevLiquidation = getInputNumber(row, ".prevLiquidation");
+
+        let l1 = getInputNumber(row, ".liq1");
+        let l2 = getInputNumber(row, ".liq2");
+        let l3 = getInputNumber(row, ".liq3");
+        let l4 = getInputNumber(row, ".liq4");
+        let l5 = getInputNumber(row, ".liq5");
+
+        let liquidationMonthlyClosing = l1 + l2 + l3 + l4 + l5;
+        let finalYearLiquidation = prevLiquidation + liquidationMonthlyClosing;
+
+        setInputValue(row, ".liqTotal", liquidationMonthlyClosing);
+        setInputValue(row, ".finalYearLiquidation", finalYearLiquidation);
+
+        calculateClosingInventory(row);
+    });
+}
+
+/* ---------------- CLOSING INVENTORY CALC ---------------- */
+
+/* ---------------- CLOSING INVENTORY CALC ---------------- */
+
+function calculateClosingInventory(row){
+
+    let openingStock = getInputNumber(row, ".openingStock");
+    let finalYearSales = getInputNumber(row, ".finalYearSales");
+    let finalYearLiquidation = getInputNumber(row, ".finalYearLiquidation");
+
+    let closingInventory = openingStock + finalYearSales - finalYearLiquidation;
+
+    setInputValue(row, ".closingInventory", closingInventory);
+}
+/* ---------------- DATE HELPERS ---------------- */
+
+function getCurrentFY(){
+    let today = new Date();
+    let year = today.getFullYear();
+    let month = today.getMonth() + 1;
+
+    let startYear, endYear;
+
+    if(month >= 4){
+        startYear = year % 100;
+        endYear = (year + 1) % 100;
+    }else{
+        startYear = (year - 1) % 100;
+        endYear = year % 100;
+    }
+
+    return `${startYear}-${endYear}`;
+}
+
+function getCurrentMonth(){
+    const months = [
+        "January","February","March","April","May","June",
+        "July","August","September","October","November","December"
+    ];
+
+    let today = new Date();
+    return months[today.getMonth()];
+}
+
+/* ---------------- SAVE ---------------- */
+
+async function saveLiquidation(){
+
+    if(isDataUpdating){
+        showToast("Please wait. Latest data is still being updated.Kindly refresh the screen after 1-2 minutes to view the latest data", "#f59e0b");
+        return;
+    }
+
+    if(!IS_PSEUDO_SALES_OFFICER){
+        showToast("You are not allowed to submit this data", "#ef4444");
+        return;
+    }
+
+    if(currentSelectedTerritoryId === "none"){
+        showToast("Please select territory", "#f59e0b");
+        return;
+   }
+
+    calculateSales();
+    calculateLiquidation();
+
+    document.getElementById("overlayLoader").style.display = "flex";
+    document.getElementById("saveBtn").disabled = true;
+
+    let month = getCurrentMonth();
+    let fy = getCurrentFY();
+
+    let rows = document.querySelectorAll("#brandTable tbody tr");
+
+    let payload = [];
+
+    for(const row of rows){
+        let brandId = row.dataset.brandid;
+
+        if(!brandId) continue;
+
+        let l1 = getInputNumber(row, ".liq1");
+        let l2 = getInputNumber(row, ".liq2");
+        let l3 = getInputNumber(row, ".liq3");
+        let l4 = getInputNumber(row, ".liq4");
+        let l5 = getInputNumber(row, ".liq5");
+
+        let liquidationMonthlyClosing = getInputNumber(row, ".liqTotal");
+        let finalYearSales = getInputNumber(row, ".finalYearSales");
+        let finalYearLiquidation = getInputNumber(row, ".finalYearLiquidation");
+        let closingInventory = getInputNumber(row, ".closingInventory");
+
+        if(liquidationMonthlyClosing === 0) continue;
+
+        payload.push({
+            id: brandId,
+            FY: fy,
+            Current_Month: month,
+            Liquidation_Week1: l1,
+            Liquidation_Week2: l2,
+            Liquidation_Week3: l3,
+            Liquidation_Week4: l4,
+            Liquidation_Week5: l5,
+            Current_Week: currentWeek,
+            Liquidation_Monthly_Closing: liquidationMonthlyClosing.toFixed(3),
+            Final_Year_Sales: finalYearSales.toFixed(3),
+            Final_Year_Liquidation: finalYearLiquidation.toFixed(3),
+            Closing_Inventory_at_the_End_o: closingInventory.toFixed(3),
+            Owner:currentUserId
+        });
+    }
+
+    if(payload.length === 0){
+        document.getElementById("overlayLoader").style.display = "none";
+        document.getElementById("saveBtn").disabled = false;
+        showToast("No data to save ⚠️", "#f59e0b");
+        return;
+    }
+
+    document.getElementById("loaderText").innerText = "Saving data...";
+    console.log("payload", payload);
+
+    try{
+        const resp = await ZOHO.CRM.FUNCTIONS.execute("saveLiquidationBulk", {
+            arguments: JSON.stringify({
+                data: payload
+            })
+        });
+
+        console.log("resp", resp);
+
+        showToast("Saved successfully 🚀");
+
+        isDataUpdating = true;
+
+        const saveBtn = document.getElementById("saveBtn");
+        saveBtn.disabled = true;
+        saveBtn.innerText = "Updating Data...";
+
+        const notice = document.getElementById("dataUpdateNotice");
+        if(notice){
+            notice.style.display = "block";
+
+            setTimeout(() => {
+                notice.style.display = "none";
+            },5000);
+        }
+
+        setTimeout(() => {
+            isDataUpdating = false;
+            saveBtn.disabled = false;
+            saveBtn.innerText = "💾 Save";
+        },120000);
+
+    }catch(err){
+        console.error(err);
+        showToast("Error saving data ❌", "#ef4444");
+    }
+
+    document.getElementById("overlayLoader").style.display = "none";
+    document.getElementById("saveBtn").disabled = false;
+}
+
+function normalizeRecordId(value){
+    if(value === null || value === undefined) return "";
+    return String(value).trim();
+}
+
+function normalizeName(value){
+    return String(value || "")
+        .trim()
+        .toLowerCase()
+        .replace(/\s+/g, " ");
+}
+
+function parseAnalyticsFunctionData(resp){
+    let output =
+        resp?.details?.output ||
+        resp?.details?.Output ||
+        resp?.output ||
+        resp?.Output ||
+        resp;
+
+    if(!output) return [];
+
+    // Sometimes output is stringified JSON, sometimes object.
+    for(let i = 0; i < 3; i++){
+        if(typeof output === "string"){
+            try{
+                output = JSON.parse(output);
+            }catch(e){
+                console.warn("Unable to parse anayticsfunc output:", output, e);
+                return [];
+            }
+        }else{
+            break;
+        }
+    }
+
+    if(Array.isArray(output?.data)){
+        return output.data;
+    }
+
+    if(Array.isArray(output)){
+        return output;
+    }
+
+    return [];
+}
+
+function sortBrandEntriesAscending(entries){
+    return entries.sort((a, b) => {
+        const nameA = String(a[1]?.displayName || "").toLowerCase();
+        const nameB = String(b[1]?.displayName || "").toLowerCase();
+
+        return nameA.localeCompare(nameB, undefined, {
+            numeric: true,
+            sensitivity: "base"
+        });
+    });
+}
+function showToast(msg, color = "#22c55e"){
+    let toast = document.getElementById("toast");
+    toast.innerText = msg;
+    toast.style.background = color;
+    toast.style.display = "block";
+
+    setTimeout(() => {
+        toast.style.display = "none";
+    }, 3000);
+}
+</script>
+
+</body>
+</html>
